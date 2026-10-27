@@ -1,0 +1,106 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: lift-orchestrator
+  namespace: lift-system
+  labels:
+    app: lift-orchestrator
+spec:
+  type: NodePort
+  ports:
+    - port: 8000
+      targetPort: 8000
+      nodePort: 30080
+      name: http
+  selector:
+    app: lift-orchestrator
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: lift-orchestrator
+  namespace: lift-system
+  labels:
+    app: lift-orchestrator
+spec:
+  serviceName: lift-orchestrator
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lift-orchestrator
+  template:
+    metadata:
+      labels:
+        app: lift-orchestrator
+    spec:
+      containers:
+        - name: orchestrator
+          image: lift-app:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: SERVICE_TYPE
+              value: "orchestrator"
+            - name: floor_count
+              valueFrom:
+                configMapKeyRef:
+                  name: lift-config
+                  key: floor_count
+            - name: min_floor
+              valueFrom:
+                configMapKeyRef:
+                  name: lift-config
+                  key: min_floor
+            - name: lift_count
+              valueFrom:
+                configMapKeyRef:
+                  name: lift-config
+                  key: lift_count
+            - name: REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: lift-config
+                  key: REDIS_HOST
+            - name: REDIS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: lift-config
+                  key: REDIS_PORT
+            - name: K8S_NAMESPACE
+              valueFrom:
+                configMapKeyRef:
+                  name: lift-config
+                  key: K8S_NAMESPACE
+          ports:
+            - containerPort: 8000
+              name: http
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          volumeMounts:
+            - name: orchestrator-storage
+              mountPath: /data
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            initialDelaySeconds: 3
+            periodSeconds: 5
+  volumeClaimTemplates:
+    - metadata:
+        name: orchestrator-storage
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 1Gi
+

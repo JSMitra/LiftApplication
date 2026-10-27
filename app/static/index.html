@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Elevator Fleet Orchestrator & Live Monitor</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Top Header Bar -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="4" y="2" width="16" height="20" rx="2" />
+            <path d="M12 6v12M8 9l4-3 4 3M8 15l4 3 4-3" />
+          </svg>
+        </div>
+        <div>
+          <h1>VERTEX LIFT SYSTEM</h1>
+          <p class="subtitle">Kubernetes StatefulSet LOOK Algorithm & Dispatch Orchestrator</p>
+        </div>
+      </div>
+
+      <!-- Quick Metrics -->
+      <div class="header-metrics">
+        <div class="metric-card">
+          <span class="metric-label">LIFTS</span>
+          <span class="metric-val" id="metric-lifts">16</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">FLOORS</span>
+          <span class="metric-val" id="metric-floors">20</span>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">PENDING CALLS</span>
+          <span class="metric-val highlight" id="metric-pending">0</span>
+        </div>
+        <div class="status-indicator" id="ws-status">
+          <span class="dot"></span>
+          <span class="status-text">CONNECTING</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Workspace Layout -->
+    <main class="main-layout">
+      <!-- Left: Elevator Shafts View -->
+      <section class="shafts-panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <h2>Building Elevation & Shaft Telemetry</h2>
+            <span class="badge" id="badge-lift-pods">16 Active StatefulSet Pods</span>
+          </div>
+          <div class="presets-bar">
+            <button class="btn btn-secondary btn-sm" id="btn-random-call">🎲 Random Call</button>
+            <button class="btn btn-secondary btn-sm" id="btn-morning-rush">🌅 Morning Rush</button>
+            <button class="btn btn-secondary btn-sm" id="btn-evening-rush">🌆 Evening Rush</button>
+            <button class="btn btn-danger btn-sm" id="btn-reset">🧹 Reset All</button>
+          </div>
+        </div>
+
+        <!-- Elevators Container -->
+        <div class="building-viewport">
+          <!-- Floor ruler on the left -->
+          <div class="floor-ruler" id="floor-ruler">
+            <!-- Floor markers injected via JS (Floor 19 down to Floor 0) -->
+          </div>
+
+          <!-- 16 Shaft Columns -->
+          <div class="shafts-grid" id="shafts-grid">
+            <!-- 16 shafts dynamically injected via JS -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Right: Hall Call Controller & Event Log -->
+      <aside class="control-panel">
+        <!-- Interactive Hall Call Station -->
+        <div class="card call-station-card">
+          <div class="card-header">
+            <h3>🛎️ Hall Call Station</h3>
+            <span class="card-tag">Tuple (Floor, Direction)</span>
+          </div>
+          
+          <form id="hall-call-form" class="call-form">
+            <div class="form-row">
+              <label for="floor-select">Select Floor:</label>
+              <select id="floor-select" class="form-input">
+                <!-- Options injected via JS -->
+              </select>
+            </div>
+
+            <div class="form-row">
+              <label>Select Direction:</label>
+              <div class="direction-toggle">
+                <button type="button" class="dir-btn active" id="btn-dir-up" data-dir="UP">
+                  <span class="arrow">▲</span> UP
+                </button>
+                <button type="button" class="dir-btn" id="btn-dir-down" data-dir="DOWN">
+                  <span class="arrow">▼</span> DOWN
+                </button>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block" id="btn-submit-call">
+              Dispatch Request Tuple
+            </button>
+          </form>
+        </div>
+
+        <!-- Active / Pending Hall Requests -->
+        <div class="card pending-card">
+          <div class="card-header">
+            <h3>⏳ Pending Hall Requests</h3>
+            <span class="badge-count" id="pending-count">0</span>
+          </div>
+          <div class="pending-list" id="pending-requests-list">
+            <div class="empty-state">No pending hall requests</div>
+          </div>
+        </div>
+
+        <!-- Live Dispatch & Service Events -->
+        <div class="card logs-card">
+          <div class="card-header">
+            <h3>⚡ Live Dispatch & Activity Feed</h3>
+            <button class="btn-text" id="btn-clear-logs">Clear</button>
+          </div>
+          <div class="log-stream" id="log-stream">
+            <div class="log-item info">
+              <span class="log-time">[System]</span>
+              <span class="log-msg">Ready. Waiting for hall requests...</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
+

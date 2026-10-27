@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: lift-config
+  namespace: lift-system
+  labels:
+    app.kubernetes.io/name: lift-config
+data:
+  # Building configuration
+  floor_count: "20"
+  min_floor: "0"
+  lift_count: "16"
+
+  # Redis parameters
+  REDIS_HOST: "redis"
+  REDIS_PORT: "6379"
+
+  # Timing parameters: 5 sub-steps of 0.2s = 1.0 second per floor
+  STEP_DELAY_SEC: "0.2"
+  FLOOR_SUB_STEPS: "5"
+  DOOR_DWELL_SEC: "1.0"
+  K8S_NAMESPACE: "lift-system"
+

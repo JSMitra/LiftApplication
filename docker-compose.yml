@@ -1,0 +1,70 @@
+version: "3.8"
+
+services:
+  # Durable Redis Component
+  redis:
+    image: redis:7.2-alpine
+    container_name: redis
+    command: redis-server --appendonly yes --appendfsync everysec --dir /data
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - lift-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # Lift Orchestrator & UI Service
+  lift-orchestrator:
+    build: .
+    container_name: lift-orchestrator
+    environment:
+      - SERVICE_TYPE=orchestrator
+      - floor_count=20
+      - min_floor=0
+      - lift_count=1
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - K8S_NAMESPACE=lift-system
+    ports:
+      - "8000:8000"
+    depends_on:
+      redis:
+        condition: service_healthy
+      lift-service:
+        condition: service_started
+    networks:
+      - lift-net
+
+  # Single Lift Service Container for Local Development
+  # (In Kubernetes, this deploys as a 16-replica StatefulSet lift-service-0 ... lift-service-15)
+  lift-service:
+    build: .
+    container_name: lift-service
+    environment:
+      - SERVICE_TYPE=lift
+      - POD_NAME=lift-service-0
+      - floor_count=20
+      - min_floor=0
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - STEP_DELAY_SEC=0.2
+      - FLOOR_SUB_STEPS=5
+      - DOOR_DWELL_SEC=1.0
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - lift-net
+
+volumes:
+  redis_data:
+    driver: local
+
+networks:
+  lift-net:
+    driver: bridge

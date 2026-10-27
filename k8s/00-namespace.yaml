@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: lift-system
+  labels:
+    app.kubernetes.io/name: lift-system
+

@@ -1,0 +1,110 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: lift-service
+  namespace: lift-system
+  labels:
+    app: lift-service
+spec:
+  clusterIP: None
+  ports:
+    - port: 8000
+      name: http
+      targetPort: 8000
+  selector:
+    app: lift-service
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: lift-service
+  namespace: lift-system
+  labels:
+    app: lift-service
+spec:
+  serviceName: lift-service
+  replicas: 16
+  podManagementPolicy: Parallel
+  selector:
+    matchLabels:
+      app: lift-service
+  template:
+    metadata:
+      labels:
+        app: lift-service
+    spec:
+      containers:
+        - name: lift-service
+          image: lift-app:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: SERVICE_TYPE
+              value: "lift"
+            # Injects the exact pod name (e.g. lift-service-0, lift-service-15) via Downward API
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: floor_count
+              valueFrom:
+                configMapKeyRef:
+                  name: lift-config
+                  key: floor_count
+            - name: min_floor
+              valueFrom:
+                configMapKeyRef:
+                  name: lift-config
+                  key: min_floor
+            - name: REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: lift-config
+                  key: REDIS_HOST
+            - name: REDIS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: lift-config
+                  key: REDIS_PORT
+            - name: STEP_DELAY_SEC
+              valueFrom:
+                configMapKeyRef:
+                  name: lift-config
+                  key: STEP_DELAY_SEC
+            - name: FLOOR_SUB_STEPS
+              valueFrom:
+                configMapKeyRef:
+                  name: lift-config
+                  key: FLOOR_SUB_STEPS
+            - name: DOOR_DWELL_SEC
+              valueFrom:
+                configMapKeyRef:
+                  name: lift-config
+                  key: DOOR_DWELL_SEC
+            - name: K8S_NAMESPACE
+              valueFrom:
+                configMapKeyRef:
+                  name: lift-config
+                  key: K8S_NAMESPACE
+          ports:
+            - containerPort: 8000
+              name: http
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8000
+            initialDelaySeconds: 3
+            periodSeconds: 5
+

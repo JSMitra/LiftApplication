@@ -1,4 +1,4 @@
-# 🛗 Vertex Elevator Fleet Simulation System
+# 🛗 Elevator Fleet Simulation System
 
 A production-grade, distributed, containerized elevator fleet simulation built with **FastAPI**, **Redis** (durable with PVC and atomic Lua scripts), and deployable to **Kubernetes** as 16-replica StatefulSets with a live real-time web monitoring UI.
 
